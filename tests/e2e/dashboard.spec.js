@@ -18,17 +18,65 @@ async function openApp(page) {
   await page.setContent(html, { waitUntil: 'load' });
 }
 
-const apiRoot = 'https://api.github.com/repos/soutarounaka1016-max/study-canvas';
+const owner = 'soutarounaka1016-max';
+const apiBase = 'https://api.github.com';
+const discoveryUrl = `${apiBase}/users/${owner}/repos?per_page=100&type=owner&sort=updated&direction=desc`;
+const repoRoot = `${apiBase}/repos/${owner}`;
+
+const discoveredRepositories = [
+  {
+    name: 'business-idea-manager',
+    owner: { login: owner },
+    description: '事業アイデアを育てるアプリ。',
+    homepage: 'https://soutarounaka1016-max.github.io/business-idea-manager/',
+    has_pages: true,
+    private: false,
+    archived: false,
+    fork: false,
+    pushed_at: '2026-07-22T01:00:00Z',
+  },
+  {
+    name: 'study-canvas',
+    owner: { login: owner },
+    description: '勉強管理アプリ。',
+    homepage: 'https://soutarounaka1016-max.github.io/study-canvas/',
+    has_pages: true,
+    private: false,
+    archived: false,
+    fork: false,
+    pushed_at: '2026-07-21T10:00:00Z',
+  },
+  {
+    name: 'codex',
+    owner: { login: owner },
+    description: 'ダッシュボード自身。',
+    has_pages: true,
+    private: false,
+    archived: false,
+    fork: false,
+  },
+  {
+    name: 'unfinished-repository',
+    owner: { login: owner },
+    has_pages: false,
+    private: false,
+    archived: false,
+    fork: false,
+  },
+];
 
 async function mockGithub(page, fail = false) {
   await page.route('https://api.github.com/**', async (route) => {
     const url = route.request().url();
     if (fail) return route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ message: 'rate limited' }) });
-    if (url === apiRoot) return route.fulfill({ json: { html_url: 'https://github.com/soutarounaka1016-max/study-canvas', updated_at: '2026-07-21T10:00:00Z', pushed_at: '2026-07-21T10:00:00Z', default_branch: 'main', archived: false, open_issues_count: 0 } });
-    if (url.includes('/commits?')) return route.fulfill({ json: [{ sha: 'abcdef1234567890', html_url: 'https://github.com/example/commit/abcdef1', commit: { message: 'feat: fixture', author: { name: 'AI', date: '2026-07-21T09:55:00Z' } } }] });
+    if (url === discoveryUrl) return route.fulfill({ json: discoveredRepositories });
+    if (url === `${repoRoot}/study-canvas` || url === `${repoRoot}/business-idea-manager`) {
+      return route.fulfill({ json: { html_url: url.replace(apiBase, 'https://github.com'), updated_at: '2026-07-22T01:00:00Z', pushed_at: '2026-07-22T01:00:00Z', default_branch: 'main', archived: false, open_issues_count: 0 } });
+    }
+    if (url.includes('/commits?')) return route.fulfill({ json: [{ sha: 'abcdef1234567890', html_url: 'https://github.com/example/commit/abcdef1', commit: { message: 'feat: fixture', author: { name: 'AI', date: '2026-07-22T00:55:00Z' } } }] });
     if (url.includes('/actions/runs?')) return route.fulfill({ json: { workflow_runs: [
-      { id: 11, name: 'Deploy GitHub Pages', status: 'completed', conclusion: 'success', html_url: 'https://github.com/example/actions/runs/11', run_number: 11, event: 'push', head_sha: 'abcdef1', created_at: '2026-07-21T10:00:00Z', updated_at: '2026-07-21T10:03:00Z' },
-      { id: 10, name: 'Test', status: 'completed', conclusion: 'success', html_url: 'https://github.com/example/actions/runs/10', run_number: 10, event: 'push', head_sha: 'abcdef1', created_at: '2026-07-21T09:56:00Z', updated_at: '2026-07-21T09:59:00Z' },
+      { id: 11, name: 'Deploy GitHub Pages', status: 'completed', conclusion: 'success', html_url: 'https://github.com/example/actions/runs/11', run_number: 11, event: 'push', head_sha: 'abcdef1', created_at: '2026-07-22T01:00:00Z', updated_at: '2026-07-22T01:03:00Z' },
+      { id: 10, name: 'Test', status: 'completed', conclusion: 'success', html_url: 'https://github.com/example/actions/runs/10', run_number: 10, event: 'push', head_sha: 'abcdef1', created_at: '2026-07-22T00:56:00Z', updated_at: '2026-07-22T00:59:00Z' },
     ] } });
     if (url.includes('/actions/runs/10/jobs')) return route.fulfill({ json: { jobs: [
       { name: 'Unit tests', status: 'completed', conclusion: 'success' },
@@ -38,7 +86,7 @@ async function mockGithub(page, fail = false) {
     ] } });
     if (url.includes('/actions/runs/11/jobs')) return route.fulfill({ json: { jobs: [
       { name: 'Deploy GitHub Pages', status: 'completed', conclusion: 'success' },
-      { name: 'Verify published Study Canvas', status: 'completed', conclusion: 'success' },
+      { name: 'Verify published URL', status: 'completed', conclusion: 'success' },
     ] } });
     if (url.includes('/pulls?')) return route.fulfill({ json: [{ number: 7, title: '改善', html_url: 'https://github.com/example/pull/7', draft: false, updated_at: '' }] });
     return route.abort();
@@ -49,22 +97,30 @@ test.beforeEach(async ({ page }) => {
   await mockGithub(page);
 });
 
-test('starts without serious JavaScript errors and shows Study Canvas', async ({ page }) => {
+test('automatically discovers published apps without serious JavaScript errors', async ({ page }) => {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await openApp(page);
-  await expect(page.getByRole('heading', { name: 'Study Canvas' })).toBeVisible();
-  await expect(page.getByRole('link', { name: '公開版' })).toHaveAttribute('href', 'https://soutarounaka1016-max.github.io/study-canvas/');
-  await expect(page.getByRole('link', { name: /^GitHub/ })).toBeVisible();
-  await expect(page.getByRole('link', { name: /^Actions/ })).toBeVisible();
-  await expect(page.getByRole('link', { name: /^Pull Request/ })).toBeVisible();
+
+  const studyCard = page.locator('[data-app-id="study-canvas"]');
+  const businessCard = page.locator('[data-app-id="business-idea-manager"]');
+  await expect(studyCard.getByRole('heading', { name: 'Study Canvas' })).toBeVisible();
+  await expect(businessCard.getByRole('heading', { name: '事業アイデア管理アプリ' })).toBeVisible();
+  await expect(page.locator('.app-card')).toHaveCount(2);
+  await expect(studyCard.getByRole('link', { name: '公開版' })).toHaveAttribute('href', 'https://soutarounaka1016-max.github.io/study-canvas/');
+  await expect(businessCard.getByRole('link', { name: '公開版' })).toHaveAttribute('href', 'https://soutarounaka1016-max.github.io/business-idea-manager/');
+  await expect(studyCard.getByRole('link', { name: /^GitHub/ })).toBeVisible();
+  await expect(studyCard.getByRole('link', { name: /^Actions/ })).toBeVisible();
+  await expect(studyCard.getByRole('link', { name: /^Pull Request/ })).toBeVisible();
   expect(errors).toEqual([]);
 });
 
-test('opens detail panel', async ({ page }) => {
+test('opens detail panel for an automatically discovered app', async ({ page }) => {
   await openApp(page);
-  await page.getByRole('button', { name: '詳細を確認' }).click();
+  const businessCard = page.locator('[data-app-id="business-idea-manager"]');
+  await businessCard.getByRole('button', { name: '詳細を確認' }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page.getByRole('heading', { name: '事業アイデア管理アプリ' })).toBeVisible();
   await expect(page.getByRole('heading', { name: '状態と最新情報' })).toBeVisible();
   await expect(page.getByText('次に確認すべきこと')).toBeVisible();
 });
@@ -81,8 +137,9 @@ test('API failure does not break the whole screen', async ({ page }) => {
   await mockGithub(page, true);
   await openApp(page);
   await expect(page.getByRole('heading', { name: 'Study Canvas' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '事業アイデア管理アプリ' })).toBeVisible();
   await expect(page.getByText(/情報を取得できませんでした/)).toBeVisible();
-  await page.getByRole('button', { name: '詳細を確認' }).click();
+  await page.getByRole('button', { name: '詳細を確認' }).first().click();
   await expect(page.getByText(/HTTP 403/).first()).toBeVisible();
 });
 
@@ -90,5 +147,5 @@ test('main elements stay within viewport', async ({ page }) => {
   await openApp(page);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 2);
   expect(overflow).toBe(false);
-  await expect(page.getByRole('button', { name: '詳細を確認' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '詳細を確認' }).first()).toBeVisible();
 });

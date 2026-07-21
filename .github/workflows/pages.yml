@@ -41,8 +41,7 @@ jobs:
         if: steps.latest.outputs.current == 'true'
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
+      - run: npm install --ignore-scripts
         if: steps.latest.outputs.current == 'true'
       - run: npm run build
         if: steps.latest.outputs.current == 'true'

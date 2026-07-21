@@ -119,10 +119,11 @@ test('opens detail panel for an automatically discovered app', async ({ page }) 
   await openApp(page);
   const businessCard = page.locator('[data-app-id="business-idea-manager"]');
   await businessCard.getByRole('button', { name: '詳細を確認' }).click();
-  await expect(page.getByRole('dialog')).toBeVisible();
-  await expect(page.getByRole('heading', { name: '事業アイデア管理アプリ' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: '状態と最新情報' })).toBeVisible();
-  await expect(page.getByText('次に確認すべきこと')).toBeVisible();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: '事業アイデア管理アプリ' })).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: '状態と最新情報' })).toBeVisible();
+  await expect(dialog.getByText('次に確認すべきこと')).toBeVisible();
 });
 
 test('manual update works', async ({ page }) => {

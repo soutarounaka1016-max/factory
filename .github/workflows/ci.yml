@@ -15,7 +15,6 @@ concurrency:
 
 jobs:
   unit-test:
-    if: ${{ hashFiles('package.json') != '' }}
     name: Unit tests
     runs-on: ubuntu-latest
     steps:
@@ -27,7 +26,6 @@ jobs:
       - run: npm test
 
   build:
-    if: ${{ hashFiles('package.json') != '' }}
     name: Build
     runs-on: ubuntu-latest
     steps:
@@ -44,7 +42,6 @@ jobs:
           retention-days: 7
 
   browser:
-    if: ${{ hashFiles('package.json') != '' }}
     name: ${{ matrix.project }}
     runs-on: ubuntu-latest
     strategy:

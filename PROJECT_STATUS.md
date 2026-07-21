@@ -3,10 +3,10 @@
 更新日: 2026-07-21
 
 ## 現在の状態
-- 第1版UI: 実装済み・自動テスト済み
-- Study Canvas初期登録: 実装済み・自動テスト済み
-- GitHub公開API取得: 実装済み・自動テスト済み
-- 詳細表示: 実装済み・自動テスト済み
+- 第1版UI: 実装済み・自動テスト済み・公開確認済み
+- Study Canvas初期登録: 実装済み・自動テスト済み・公開確認済み
+- GitHub公開API取得: 実装済み・自動テスト済み・公開確認済み
+- 詳細表示: 実装済み・自動テスト済み・公開確認済み
 - 取得失敗時の安全表示: 実装済み・自動テスト済み
 - 設定データによるアプリ追加: 実装済み・自動テスト済み
 - Pull Request #1: mainへ反映済み
@@ -17,11 +17,11 @@
 - iPad横向き相当: ローカル5件成功・WebKit GitHub Actions成功
 - iPad縦向き相当: ローカル5件成功・WebKit GitHub Actions成功
 - スマートフォン相当: ローカル5件成功・GitHub Actions成功
-- main最終CI: 9ジョブ成功（Actions run 29838087418）
 - GitHub Pages初回設定: 完了
-- GitHub Pages: 最新mainから再公開処理中
-- 公開予定URL: https://soutarounaka1016-max.github.io/codex/
-- 公開URL起動確認: Pages公開後にワークフローで自動実行
+- GitHub Pages公開: 成功
+- 公開URL: https://soutarounaka1016-max.github.io/codex/
+- 公開URL起動確認: Chromiumによる自動確認成功
+- 公開後の重大なJavaScriptエラー: なし
 - iPad Safari実機: 実装済み・実機未確認
 
 ## セキュリティ
@@ -31,5 +31,5 @@
 - localStorage: 公開情報の前回取得結果だけを保存
 - Pages有効化のために秘密情報をコードへ追加する代替案: 不採用
 
-## 公開処理
-GitHub Pagesの発行元は `GitHub Actions` に設定済み。今回の通常コミットを起点に、CI成功後、最新mainだけをGitHub Pagesへ公開し、公開URLをChromiumで自動確認する。
+## 完成判定
+第1版の実装、通常テスト、ビルド、Chromium、WebKit、iPad縦横相当、スマートフォン相当、GitHub Pages公開、公開URL起動確認は完了。既知の重大な不具合はない。iPad Safari実機での確認だけを、実装済み・実機未確認として残す。

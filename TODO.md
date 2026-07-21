@@ -16,12 +16,10 @@
 - [x] スマートフォン相当（ローカル・GitHub Actions）
 - [x] npm audit（脆弱性0件）
 - [x] Pull Request #1をmainへ反映
-
-## 保留: GitHub Pagesの初回設定
-- [ ] リポジトリの `Settings` → `Pages` を開く
-- [ ] `Build and deployment` の `Source` を `GitHub Actions` にする
-- [ ] 失敗した `Deploy Pages`（run 29838228429）を再実行する
-- [ ] 公開URL `https://soutarounaka1016-max.github.io/codex/` の自動起動確認を成功させる
+- [x] GitHub Pagesの発行元をGitHub Actionsに設定
+- [x] GitHub Pagesへ公開
+- [x] 公開URLをChromiumで自動確認
+- [x] 公開後の重大なJavaScriptエラーがないことを確認
 
 ## 実機未確認
 - [ ] iPad Safariで公開URLを開く

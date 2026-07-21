@@ -1,6 +1,12 @@
 # TODO.md
 
 ## 完了
+- [x] 第1版UIと詳細パネル
+- [x] Study Canvasの初期登録
+- [x] 公開GitHub APIからの匿名取得
+- [x] 手動更新と取得状態表示
+- [x] API失敗時の安全表示
+- [x] 設定ファイルによるアプリ追加構造
 - [x] 通常テスト（ローカル6件・GitHub Actions）
 - [x] 本番ビルド（ローカル・GitHub Actions）
 - [x] Chromium（ローカル・GitHub Actions）
@@ -8,12 +14,14 @@
 - [x] iPad横向き相当（ローカル・WebKit GitHub Actions）
 - [x] iPad縦向き相当（ローカル・WebKit GitHub Actions）
 - [x] スマートフォン相当（ローカル・GitHub Actions）
-- [x] API失敗時の安全表示
 - [x] npm audit（脆弱性0件）
+- [x] Pull Request #1をmainへ反映
 
-## main反映後
-- [ ] GitHub Pages公開
-- [ ] 公開URL起動確認
+## 保留: GitHub Pagesの初回設定
+- [ ] リポジトリの `Settings` → `Pages` を開く
+- [ ] `Build and deployment` の `Source` を `GitHub Actions` にする
+- [ ] 失敗した `Deploy Pages`（run 29838228429）を再実行する
+- [ ] 公開URL `https://soutarounaka1016-max.github.io/codex/` の自動起動確認を成功させる
 
 ## 実機未確認
 - [ ] iPad Safariで公開URLを開く

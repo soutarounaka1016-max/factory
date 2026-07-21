@@ -18,11 +18,10 @@
 - iPad縦向き相当: ローカル5件成功・WebKit GitHub Actions成功
 - スマートフォン相当: ローカル5件成功・GitHub Actions成功
 - main最終CI: 9ジョブ成功（Actions run 29838087418）
-- GitHub Pages: 保留
-- Pages公開処理: ビルド成功後、`Configure Pages` で失敗（Actions run 29838228429）
-- 保留理由: リポジトリ設定でPagesの発行元を一度 `GitHub Actions` に設定する管理操作が必要
+- GitHub Pages初回設定: 完了
+- GitHub Pages: 最新mainから再公開処理中
 - 公開予定URL: https://soutarounaka1016-max.github.io/codex/
-- 公開URL起動確認: 未実行（Pages有効化後にワークフローが自動実行）
+- 公開URL起動確認: Pages公開後にワークフローで自動実行
 - iPad Safari実機: 実装済み・実機未確認
 
 ## セキュリティ
@@ -32,5 +31,5 @@
 - localStorage: 公開情報の前回取得結果だけを保存
 - Pages有効化のために秘密情報をコードへ追加する代替案: 不採用
 
-## 再開条件
-GitHubの `Settings` → `Pages` → `Build and deployment` → `Source` で `GitHub Actions` を選択する。設定後、失敗した `Deploy Pages` ワークフローを再実行すれば、公開と公開URLのChromium確認まで自動で進む。
+## 公開処理
+GitHub Pagesの発行元は `GitHub Actions` に設定済み。今回の通常コミットを起点に、CI成功後、最新mainだけをGitHub Pagesへ公開し、公開URLをChromiumで自動確認する。

@@ -1,18 +1,17 @@
 # TODO.md
 
 ## 完了
-- [x] 通常テスト（6件）
-- [x] 本番ビルド
-- [x] Chromium
-- [x] iPad横向き相当
-- [x] iPad縦向き相当
-- [x] スマートフォン相当
+- [x] 通常テスト（ローカル6件・GitHub Actions）
+- [x] 本番ビルド（ローカル・GitHub Actions）
+- [x] Chromium（ローカル・GitHub Actions）
+- [x] WebKit（GitHub Actions）
+- [x] iPad横向き相当（ローカル・WebKit GitHub Actions）
+- [x] iPad縦向き相当（ローカル・WebKit GitHub Actions）
+- [x] スマートフォン相当（ローカル・GitHub Actions）
 - [x] API失敗時の安全表示
 - [x] npm audit（脆弱性0件）
 
-## GitHub実行待ち
-- [ ] WebKit
-- [ ] GitHub Actions全ジョブ
+## main反映後
 - [ ] GitHub Pages公開
 - [ ] 公開URL起動確認
 

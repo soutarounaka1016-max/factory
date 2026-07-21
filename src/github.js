@@ -1,5 +1,8 @@
+import { isDiscoverableRepository, mergeApps, repositoryToApp } from './apps.js';
+
 const API = 'https://api.github.com';
 const CACHE_PREFIX = 'ai-factory-dashboard:snapshot:';
+const APP_LIST_CACHE_KEY = 'ai-factory-dashboard:apps';
 
 async function fetchJson(endpoint, signal) {
   try {
@@ -15,6 +18,37 @@ async function fetchJson(endpoint, signal) {
   } catch (error) {
     return { error: { endpoint, message: error instanceof Error ? error.message : '不明な通信エラー' } };
   }
+}
+
+function saveAppList(apps) {
+  try { localStorage.setItem(APP_LIST_CACHE_KEY, JSON.stringify(apps)); } catch { /* 表示継続 */ }
+}
+
+function readAppList() {
+  try {
+    const raw = localStorage.getItem(APP_LIST_CACHE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+export async function discoverApps(factory, pinnedApps, signal) {
+  const owner = encodeURIComponent(factory.owner);
+  const endpoint = `/users/${owner}/repos?per_page=100&type=owner&sort=updated&direction=desc`;
+  const repositories = await fetchJson(endpoint, signal);
+
+  if (Array.isArray(repositories.data)) {
+    const discovered = repositories.data
+      .filter((repo) => isDiscoverableRepository(repo, factory))
+      .map((repo) => repositoryToApp(repo, factory.owner));
+    const apps = mergeApps(pinnedApps, discovered);
+    saveAppList(apps);
+    return { apps, errors: [] };
+  }
+
+  return {
+    apps: mergeApps(pinnedApps, readAppList()),
+    errors: repositories.error ? [repositories.error] : [],
+  };
 }
 
 const cacheKey = (config) => `${CACHE_PREFIX}${config.owner}/${config.repo}`;

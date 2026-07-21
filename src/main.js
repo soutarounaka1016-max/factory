@@ -1,6 +1,6 @@
 import './styles.css';
-import { apps } from './apps.js';
-import { loadSnapshot } from './github.js';
+import { factory, pinnedApps } from './apps.js';
+import { discoverApps, loadSnapshot } from './github.js';
 import { deriveState } from './status.js';
 import { firstLine, formatDate, shortSha } from './format.js';
 
@@ -8,6 +8,7 @@ const root = document.querySelector('#app');
 if (!root) throw new Error('App root was not found');
 
 let snapshots = [];
+let appConfigs = pinnedApps;
 let controller;
 let loading = false;
 let updateState = 'idle';
@@ -82,11 +83,11 @@ function render() {
           <div class="summary-card"><strong>${c.attention}</strong><span>確認が必要</span></div>
         </div>
       </section>
-      <section aria-labelledby="apps-title"><div class="section-heading"><h2 id="apps-title">アプリ一覧</h2><p>設定データから追加可能</p></div>
-        <div class="app-grid">${snapshots.length ? snapshots.map(card).join('') : '<div class="empty-state">状態を取得しています。</div>'}</div>
+      <section aria-labelledby="apps-title"><div class="section-heading"><h2 id="apps-title">アプリ一覧</h2><p>GitHub Pagesから自動検出</p></div>
+        <div class="app-grid">${snapshots.length ? snapshots.map(card).join('') : '<div class="empty-state">アプリ一覧と状態を取得しています。</div>'}</div>
       </section>
     </main>
-    <footer class="footer">公開リポジトリのGitHub APIだけを匿名で利用します。トークン、APIキー、パスワードは保存しません。匿名APIには回数制限があるため、連打は人間の尊厳とともに控えてください。</footer>
+    <footer class="footer">GitHub Pagesが有効な公開リポジトリを自動検出し、公開GitHub APIだけを匿名で利用します。トークン、APIキー、パスワードは保存しません。匿名APIには回数制限があるため、連打は人間の尊厳とともに控えてください。</footer>
   </div><dialog id="detail-dialog" aria-labelledby="detail-title"><div id="dialog-content"></div></dialog>`;
   root.querySelector('#refresh')?.addEventListener('click', refresh);
   root.querySelectorAll('[data-detail]').forEach((button) => button.addEventListener('click', () => openDetail(button.dataset.detail)));
@@ -131,13 +132,17 @@ async function refresh() {
   controller = new AbortController();
   loading = true;
   updateState = 'loading';
-  updateMessage = 'GitHubから最新状態を取得しています。';
+  updateMessage = 'GitHubからアプリ一覧と最新状態を取得しています。';
   render();
   try {
-    snapshots = await Promise.all(apps.map((config) => loadSnapshot(config, controller.signal)));
-    const errors = snapshots.reduce((sum, item) => sum + (item.errors?.length || 0), 0);
+    const discovery = await discoverApps(factory, pinnedApps, controller.signal);
+    appConfigs = discovery.apps;
+    snapshots = await Promise.all(appConfigs.map((config) => loadSnapshot(config, controller.signal)));
+    const errors = discovery.errors.length + snapshots.reduce((sum, item) => sum + (item.errors?.length || 0), 0);
     updateState = errors ? 'error' : 'success';
-    updateMessage = errors ? `更新しましたが、${errors}件の情報を取得できませんでした。` : '最新状態へ更新しました。';
+    updateMessage = errors
+      ? `更新しましたが、${errors}件の情報を取得できませんでした。`
+      : `最新状態へ更新しました。${appConfigs.length}件の公開アプリを検出しています。`;
   } catch (error) {
     updateState = 'error';
     updateMessage = `更新に失敗しました: ${error instanceof Error ? error.message : '不明なエラー'}`;

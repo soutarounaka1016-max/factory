@@ -9,7 +9,7 @@
 
 ## 開発と確認
 ```bash
-npm ci
+npm install --ignore-scripts
 npm test
 npm run build
 npx playwright install chromium webkit

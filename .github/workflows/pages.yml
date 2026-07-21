@@ -1,0 +1,75 @@
+name: Deploy Pages
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - name: Reject stale main deployment
+        id: latest
+        shell: bash
+        run: |
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" = "${{ github.event.workflow_run.head_sha }}" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "current=false" >> "$GITHUB_OUTPUT"
+            echo "A newer main commit exists. This deployment is skipped."
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.latest.outputs.current == 'true'
+        with:
+          node-version: 22
+      - run: npm install --ignore-scripts
+        if: steps.latest.outputs.current == 'true'
+      - run: npm run build
+        if: steps.latest.outputs.current == 'true'
+      - name: Configure Pages
+        if: steps.latest.outputs.current == 'true'
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        if: steps.latest.outputs.current == 'true'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+      - name: Deploy Pages
+        if: steps.latest.outputs.current == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Install Chromium for published-site check
+        if: steps.latest.outputs.current == 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Verify published URL
+        if: steps.latest.outputs.current == 'true'
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: node scripts/live-smoke.mjs
+      - name: Upload published-site evidence
+        if: always() && steps.latest.outputs.current == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-pages-smoke-${{ github.run_attempt }}
+          path: live-smoke.png
+          if-no-files-found: ignore
+          retention-days: 14

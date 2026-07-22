@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/codex/',
+  base: '/factory/',
   build: { outDir: 'dist', sourcemap: true },
   test: { environment: 'node', include: ['tests/unit/**/*.test.js'] },
 });

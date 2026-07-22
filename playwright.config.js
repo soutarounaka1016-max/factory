@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 const localStaticMode = Boolean(executablePath);
+const pagesBase = '/factory/';
 const localChromium = executablePath
   ? { browserName: 'chromium', launchOptions: { executablePath } }
   : {};
@@ -16,14 +17,14 @@ export default defineConfig({
   workers: 2,
   reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   use: {
-    baseURL: localStaticMode ? 'https://dashboard.test/codex/' : 'http://127.0.0.1:4173/codex/',
+    baseURL: localStaticMode ? `https://dashboard.test${pagesBase}` : `http://127.0.0.1:4173${pagesBase}`,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: localStaticMode ? 'off' : 'retain-on-failure',
   },
   webServer: localStaticMode ? undefined : {
     command: 'npm run build && npm run preview -- --port 4173',
-    url: 'http://127.0.0.1:4173/codex/',
+    url: `http://127.0.0.1:4173${pagesBase}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },

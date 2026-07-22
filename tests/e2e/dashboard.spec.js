@@ -12,8 +12,9 @@ async function openApp(page) {
   const cssMatch = html.match(/<link[^>]+href="([^"]+\.css)"[^>]*>/);
   const jsMatch = html.match(/<script[^>]+src="([^"]+\.js)"[^>]*><\/script>/);
   if (!cssMatch || !jsMatch) throw new Error('Built assets were not found');
-  const css = await fs.readFile(path.resolve('dist', cssMatch[1].replace(/^\/codex\//, '')), 'utf8');
-  const js = await fs.readFile(path.resolve('dist', jsMatch[1].replace(/^\/codex\//, '')), 'utf8');
+  const assetPath = (value) => value.replace(/^\/[^/]+\//, '');
+  const css = await fs.readFile(path.resolve('dist', assetPath(cssMatch[1])), 'utf8');
+  const js = await fs.readFile(path.resolve('dist', assetPath(jsMatch[1])), 'utf8');
   html = html.replace(cssMatch[0], `<style>${css}</style>`).replace(jsMatch[0], `<script type="module">${js}</script>`);
   await page.setContent(html, { waitUntil: 'load' });
 }

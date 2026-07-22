@@ -26,10 +26,9 @@ function linksFor(snapshot) {
 function progressFor(state) {
   if (state.overall.tone === 'danger') return { value: 62, label: '修正中' };
   if (state.overall.tone === 'running') return { value: 82, label: '自動確認中' };
-  if (state.publication.tone === 'success' && state.tests.tone === 'success') return { value: 100, label: '公開完了' };
-  if (state.build.tone === 'success') return { value: 72, label: '公開待ち' };
-  if (state.tests.tone === 'success') return { value: 55, label: 'ビルド待ち' };
-  return { value: 30, label: '開発中' };
+  if (state.overall.tone === 'warning' || state.overall.tone === 'neutral') return { value: 88, label: '確認待ち' };
+  if (state.publication.tone === 'success' && state.tests.tone === 'success' && state.build.tone === 'success') return { value: 100, label: '公開完了' };
+  return { value: 45, label: '開発中' };
 }
 
 function priorityFor(snapshot, state) {
@@ -79,15 +78,12 @@ function metrics() {
   const workflowRuns = snapshots.flatMap((snapshot) => [snapshot.latestRun, snapshot.deployRun].filter(Boolean));
   const successfulRuns = workflowRuns.filter((run) => run.conclusion === 'success').length;
   const completedRuns = workflowRuns.filter((run) => run.status === 'completed').length;
-  const successRate = completedRuns ? Math.round((successfulRuns / completedRuns) * 100) : 0;
   return {
     total: snapshots.length,
-    healthy: states.filter((s) => s.overall.tone === 'success').length,
-    testFail: states.filter((s) => [s.tests, s.chromium, s.webkit].some((x) => x.tone === 'danger')).length,
-    publishFail: states.filter((s) => s.publication.tone === 'danger').length,
-    attention: states.filter((s) => ['danger', 'warning', 'neutral'].includes(s.overall.tone)).length,
+    healthy: states.filter((state) => state.overall.tone === 'success').length,
+    attention: states.filter((state) => state.overall.tone !== 'success').length,
     openPrs: snapshots.reduce((sum, item) => sum + (item.pullRequests?.length || 0), 0),
-    successRate,
+    successRate: completedRuns ? Math.round((successfulRuns / completedRuns) * 100) : 0,
   };
 }
 
@@ -98,7 +94,9 @@ function errorItems() {
     if (state.tests.tone === 'danger') issues.push('テスト失敗');
     if (state.build.tone === 'danger') issues.push('ビルド失敗');
     if (state.publication.tone === 'danger') issues.push('公開失敗');
+    if (state.pages.tone === 'warning') issues.push('公開URL未確認');
     if (snapshot.errors?.length) issues.push(`情報取得失敗 ${snapshot.errors.length}件`);
+    if (!issues.length && ['warning', 'neutral'].includes(state.overall.tone)) issues.push('確認結果が不足');
     return issues.map((issue) => ({ name: snapshot.config.name, issue, id: snapshot.config.id }));
   });
 }
@@ -111,11 +109,14 @@ function historyItems() {
 }
 
 function factoryNow() {
-  const running = snapshots.filter((snapshot) => deriveState(snapshot).overall.tone === 'running');
-  const broken = snapshots.filter((snapshot) => deriveState(snapshot).overall.tone === 'danger');
-  if (broken.length) return { tone: 'danger', title: '修正が必要', detail: `${broken[0].config.name}で失敗を検出しています。` };
-  if (running.length) return { tone: 'running', title: '自動確認中', detail: `${running[0].config.name}のGitHub Actionsが動いています。` };
-  if (snapshots.length) return { tone: 'success', title: '稼働中', detail: '現在、重大な停止は検出されていません。' };
+  const states = snapshots.map((snapshot) => ({ snapshot, state: deriveState(snapshot) }));
+  const broken = states.find(({ state }) => state.overall.tone === 'danger');
+  const running = states.find(({ state }) => state.overall.tone === 'running');
+  const uncertain = states.find(({ state }) => ['warning', 'neutral'].includes(state.overall.tone));
+  if (broken) return { tone: 'danger', title: '修正が必要', detail: `${broken.snapshot.config.name}で失敗を検出しています。` };
+  if (running) return { tone: 'running', title: '自動確認中', detail: `${running.snapshot.config.name}のGitHub Actionsが動いています。` };
+  if (uncertain) return { tone: 'warning', title: '確認が必要', detail: `${uncertain.snapshot.config.name}に未確認項目があります。` };
+  if (states.length && states.every(({ state }) => state.overall.tone === 'success')) return { tone: 'success', title: '稼働中', detail: '取得できた全アプリの主要確認が成功しています。' };
   return { tone: 'neutral', title: '情報取得中', detail: '工場の状態を読み込んでいます。' };
 }
 
@@ -142,8 +143,8 @@ function render() {
           <div class="summary-card"><strong>${c.successRate}%</strong><span>取得済み実行の成功率</span></div>
         </div>
       </section>
-      <section aria-labelledby="errors-title"><div class="section-heading"><h2 id="errors-title">エラーセンター</h2><p>止まっている場所だけを表示</p></div>
-        <div class="error-center">${errors.length ? errors.map((item) => `<button type="button" data-detail="${escapeHtml(item.id)}"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.issue)}</span></button>`).join('') : '<div class="all-clear"><strong>重大なエラーなし</strong><span>取得できた範囲では正常です。</span></div>'}</div>
+      <section aria-labelledby="errors-title"><div class="section-heading"><h2 id="errors-title">エラーセンター</h2><p>失敗と未確認項目を表示</p></div>
+        <div class="error-center">${errors.length ? errors.map((item) => `<button type="button" data-detail="${escapeHtml(item.id)}"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.issue)}</span></button>`).join('') : '<div class="all-clear"><strong>重大なエラーなし</strong><span>全アプリの主要確認結果を取得できています。</span></div>'}</div>
       </section>
       <section aria-labelledby="apps-title"><div class="section-heading"><h2 id="apps-title">生産ラインとアプリ一覧</h2><p>企画 → 実装 → テスト → 公開</p></div>
         <div class="app-grid">${snapshots.length ? snapshots.map(card).join('') : '<div class="empty-state">アプリ一覧と状態を取得しています。</div>'}</div>
@@ -152,7 +153,7 @@ function render() {
         <div class="history-list">${history.length ? history.map((snapshot) => `<article><time>${escapeHtml(formatDate(snapshot.commit.commit.author.date))}</time><div><strong>${escapeHtml(snapshot.config.name)}</strong><p>${escapeHtml(firstLine(snapshot.commit.commit.message))}</p></div><a class="external" href="${escapeHtml(snapshot.commit.html_url)}" target="_blank" rel="noopener noreferrer">確認</a></article>`).join('') : '<div class="empty-state">更新履歴を取得しています。</div>'}</div>
       </section>
     </main>
-    <footer class="footer">公開GitHub APIから状態を読み取ります。認証情報は保存しません。匿名APIには回数制限があるため、更新ボタンを連打してサーバーと指を同時に疲れさせないでください。</footer>
+    <footer class="footer">公開GitHub APIから状態を読み取ります。認証情報は保存しません。匿名APIには回数制限があるため、更新ボタンの連打は控えてください。</footer>
   </div><dialog id="detail-dialog" aria-labelledby="detail-title"><div id="dialog-content"></div></dialog>`;
   root.querySelector('#refresh')?.addEventListener('click', refresh);
   root.querySelectorAll('[data-detail]').forEach((button) => button.addEventListener('click', () => openDetail(button.dataset.detail)));
@@ -182,7 +183,7 @@ function openDetail(id) {
       <section class="detail-section"><h3>AIメモと次の作業</h3><p>${escapeHtml(snapshot.config.memo || state.nextAction)}</p><p>${escapeHtml(state.nextAction)}</p></section>
       <section class="detail-section"><h3>自動ヘルスチェック</h3><div class="health-checks"><span>${statusHtml(state.tests)} テスト</span><span>${statusHtml(state.build)} ビルド</span><span>${statusHtml(state.chromium)} Chromium</span><span>${statusHtml(state.webkit)} WebKit</span><span>${statusHtml(state.pages)} 公開</span></div></section>
       <section class="detail-section"><h3>関連リンク</h3><div class="link-list">${link(snapshot.config.publicUrl, '公開URL')}${link(links.repo, 'リポジトリ')}${link(links.actions, 'GitHub Actions')}${link(links.pulls, 'Pull Request')}${link(links.issues, 'Issues')}</div></section>
-      <section class="detail-section"><h3>エラー概要</h3>${snapshot.errors?.length ? `<ul class="error-list">${snapshot.errors.map((e) => `<li>${escapeHtml(e.endpoint)}: ${escapeHtml(e.message)}</li>`).join('')}</ul>` : '<p>取得エラーはありません。</p>'}</section>
+      <section class="detail-section"><h3>エラー概要</h3>${snapshot.errors?.length ? `<ul class="error-list">${snapshot.errors.map((error) => `<li>${escapeHtml(error.endpoint)}: ${escapeHtml(error.message)}</li>`).join('')}</ul>` : '<p>取得エラーはありません。</p>'}</section>
     </div>`;
   content.querySelector('.close-button')?.addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); }, { once: true });

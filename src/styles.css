@@ -21,6 +21,8 @@ a { color: #9bd1ff; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { font: inherit; }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.skip-link { position: fixed; top: -6rem; left: 1rem; z-index: 1000; padding: .8rem 1rem; border-radius: .7rem; background: #fff; color: #06101d; font-weight: 800; }
+.skip-link:focus { top: 1rem; }
 .shell { width: min(1440px, 100%); margin: 0 auto; padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(2rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); }
 .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
 .eyebrow { margin: 0 0 .35rem; color: #83c5ff; font-size: .83rem; font-weight: 850; letter-spacing: .1em; }
@@ -36,6 +38,7 @@ h1 { margin: 0; font-size: clamp(1.65rem, 4vw, 2.6rem); line-height: 1.12; }
 .factory-success { border-color: rgba(85,213,141,.55); }
 .factory-danger { border-color: rgba(255,129,136,.65); }
 .factory-running { border-color: rgba(220,176,255,.6); }
+.factory-warning, .factory-neutral { border-color: rgba(244,201,94,.55); }
 .health-ring { width: 92px; height: 92px; flex: 0 0 92px; display: grid; place-content: center; border: 8px solid rgba(121,188,255,.25); border-top-color: #79bcff; border-radius: 50%; text-align: center; }
 .health-ring strong { font-size: 1.35rem; line-height: 1; }
 .health-ring span { margin-top: .25rem; color: var(--muted); font-size: .72rem; }

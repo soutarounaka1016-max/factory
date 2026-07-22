@@ -4,6 +4,13 @@ export const factory = Object.freeze({
   excludedRepos: ['factory', 'codex'],
 });
 
+const businessIdeaMetadata = {
+  name: '事業アイデア管理アプリ',
+  description: '思いついた事業アイデアを調査、仮説、検証、改善、事業化候補まで育てるWebアプリ。',
+  memo: '実際の利用で、入力のしやすさと検証記録の流れを確認する。',
+  priority: 4,
+};
+
 const appOverrides = {
   'study-canvas': {
     name: 'Study Canvas',
@@ -13,11 +20,14 @@ const appOverrides = {
     priority: 5,
   },
   'idea.withGPT': {
-    name: '事業アイデア管理アプリ',
-    description: '思いついた事業アイデアを調査、仮説、検証、改善、事業化候補まで育てるWebアプリ。',
+    ...businessIdeaMetadata,
     publicUrl: 'https://soutarounaka1016-max.github.io/idea.withGPT/',
-    memo: '実際の利用で、入力のしやすさと検証記録の流れを確認する。',
-    priority: 4,
+  },
+  // 旧名のリポジトリがAPIやテストデータから返った場合だけ同じ日本語表示を使う。
+  // 固定登録はしないため、現在の正式版と二重表示にはならない。
+  'business-idea-manager': {
+    ...businessIdeaMetadata,
+    publicUrl: 'https://soutarounaka1016-max.github.io/business-idea-manager/',
   },
   market: {
     name: 'Market',
@@ -27,10 +37,10 @@ const appOverrides = {
 };
 
 /**
- * GitHub APIが一時的に失敗しても、主要アプリだけは表示を継続します。
- * 実在しない旧リポジトリを固定登録すると重複の原因になるため、現在の正式リポジトリだけを保持します。
+ * GitHub APIが一時的に失敗しても、中心アプリだけは表示を継続します。
+ * 事業アイデア管理アプリは正式リポジトリをAPIから自動検出し、旧名を固定登録しません。
  */
-export const pinnedApps = ['study-canvas', 'idea.withGPT'].map((repo) => ({
+export const pinnedApps = ['study-canvas'].map((repo) => ({
   id: repo,
   owner: factory.owner,
   repo,

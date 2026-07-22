@@ -27,8 +27,11 @@ if (new Set(ids.map((id) => id.toLowerCase())).size !== ids.length) {
   throw new Error(`Duplicate application cards: ${ids.join(', ')}`);
 }
 
-const visibleSkipLink = await page.locator('.skip-link').isVisible();
-if (visibleSkipLink) throw new Error('Skip link is visible without keyboard focus');
+const skipLinkIntrudesIntoViewport = await page.locator('.skip-link').evaluate((element) => {
+  const rect = element.getBoundingClientRect();
+  return rect.bottom > 0 && rect.right > 0 && rect.top < window.innerHeight && rect.left < window.innerWidth;
+});
+if (skipLinkIntrudesIntoViewport) throw new Error('Skip link intrudes into the viewport without keyboard focus');
 
 const invalidOpenLinks = await page.locator('.app-card a.action-link').evaluateAll((links) => links
   .map((link) => link.getAttribute('href'))

@@ -1,0 +1,34 @@
+.completion-actions {
+  margin-top: 1rem;
+}
+
+.completion-button {
+  width: 100%;
+  min-height: 50px;
+  padding: .78rem 1rem;
+  border: 1px solid rgba(85, 213, 141, .75);
+  border-radius: .82rem;
+  background: rgba(28, 111, 67, .48);
+  color: #eafff2;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.completion-button:hover {
+  background: rgba(35, 139, 83, .62);
+}
+
+.completion-button-active {
+  border-color: #59718d;
+  background: #1b3048;
+  color: #d6e2ef;
+}
+
+.app-card-completed {
+  border-color: rgba(85, 213, 141, .75);
+  background: linear-gradient(145deg, rgba(19, 62, 46, .96), rgba(11, 31, 31, .98));
+}
+
+.app-card-completed .pipeline-track span {
+  background: linear-gradient(90deg, #55d58d, #9be8bc);
+}

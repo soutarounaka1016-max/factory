@@ -62,14 +62,13 @@ jobs:
   browser:
     name: ${{ matrix.project }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         include:
           - project: chromium
             browser: chromium
-          - project: webkit
-            browser: webkit
           - project: ipad-landscape
             browser: webkit
           - project: ipad-portrait

@@ -2,7 +2,8 @@
   margin-top: 1rem;
 }
 
-.completion-button {
+.completion-button,
+.resume-button {
   width: 100%;
   min-height: 50px;
   padding: .78rem 1rem;
@@ -18,17 +19,145 @@
   background: rgba(35, 139, 83, .62);
 }
 
-.completion-button-active {
+.active-apps-section {
+  margin: 1.8rem 0 1.2rem;
+  padding: 1rem;
+  border: 1px solid rgba(121, 188, 255, .42);
+  border-radius: 1.25rem;
+  background: rgba(8, 23, 39, .52);
+}
+
+.section-heading-emphasis {
+  margin-top: 0;
+}
+
+.section-heading-emphasis h2 {
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+}
+
+.app-card-active {
+  border-color: rgba(121, 188, 255, .38);
+}
+
+.summary-card-primary {
+  border-color: rgba(121, 188, 255, .65);
+  background: linear-gradient(145deg, rgba(28, 76, 115, .95), rgba(17, 39, 61, .95));
+}
+
+.completed-apps-section {
+  margin-top: 1.6rem;
+  padding-top: .4rem;
+  border-top: 1px solid var(--line);
+}
+
+.completed-list {
+  display: grid;
+  gap: .7rem;
+}
+
+.completed-card {
+  padding: .9rem;
+  border: 1px solid rgba(85, 213, 141, .35);
+  border-radius: .95rem;
+  background: rgba(13, 43, 34, .55);
+}
+
+.completed-card-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+}
+
+.completed-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .65rem;
+}
+
+.completed-title-row h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.completed-card p {
+  margin: .35rem 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.completed-card small {
+  color: #9fb2c6;
+}
+
+.completed-card-actions {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: .5rem;
+}
+
+.compact-link,
+.resume-button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .62rem .75rem;
+  border: 1px solid #3a6085;
+  border-radius: .7rem;
+  background: #122f4c;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.resume-button {
+  width: auto;
   border-color: #59718d;
   background: #1b3048;
   color: #d6e2ef;
 }
 
-.app-card-completed {
-  border-color: rgba(85, 213, 141, .75);
-  background: linear-gradient(145deg, rgba(19, 62, 46, .96), rgba(11, 31, 31, .98));
+.empty-state strong,
+.empty-state span {
+  display: block;
 }
 
-.app-card-completed .pipeline-track span {
-  background: linear-gradient(90deg, #55d58d, #9be8bc);
+.empty-state span {
+  margin-top: .35rem;
+}
+
+.empty-state-success {
+  grid-column: 1 / -1;
+  border-color: rgba(85, 213, 141, .45);
+  color: #bdeed2;
+}
+
+@media (max-width: 900px) {
+  .completed-card-main {
+    grid-template-columns: 1fr;
+  }
+
+  .completed-card-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .active-apps-section {
+    padding: .7rem;
+  }
+
+  .completed-card-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .compact-link,
+  .resume-button {
+    white-space: normal;
+    text-align: center;
+  }
 }

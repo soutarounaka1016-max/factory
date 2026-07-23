@@ -13,11 +13,12 @@ if (!response?.ok()) throw new Error(`Page returned ${response?.status() ?? 'no 
 
 await page.getByRole('heading', { name: 'AI工場ダッシュボード' }).waitFor({ timeout: 30000 });
 await page.getByRole('heading', { name: '全体概要' }).waitFor({ timeout: 30000 });
+await page.getByRole('heading', { name: '開発中のアプリ' }).waitFor({ timeout: 30000 });
 await page.getByRole('heading', { name: 'エラーセンター' }).waitFor({ timeout: 30000 });
-await page.getByRole('heading', { name: '生産ラインとアプリ一覧' }).waitFor({ timeout: 30000 });
+await page.getByRole('heading', { name: '完了したアプリ開発' }).waitFor({ timeout: 30000 });
 await page.getByRole('button', { name: /最新状態に更新/ }).waitFor({ timeout: 30000 });
 
-const cards = page.locator('.app-card');
+const cards = page.locator('.app-card, .completed-card');
 await cards.first().waitFor({ timeout: 30000 });
 const cardCount = await cards.count();
 if (cardCount < 1) throw new Error('No application cards were rendered');
@@ -33,7 +34,7 @@ const skipLinkIntrudesIntoViewport = await page.locator('.skip-link').evaluate((
 });
 if (skipLinkIntrudesIntoViewport) throw new Error('Skip link intrudes into the viewport without keyboard focus');
 
-const invalidOpenLinks = await page.locator('.app-card a.action-link').evaluateAll((links) => links
+const invalidOpenLinks = await page.locator('.app-card a.action-link, .completed-card a.compact-link').evaluateAll((links) => links
   .map((link) => link.getAttribute('href'))
   .filter((href) => !href || !/^https:\/\//.test(href)));
 if (invalidOpenLinks.length) throw new Error(`Invalid application links: ${invalidOpenLinks.join(', ')}`);

@@ -98,7 +98,7 @@ jobs:
   ipad:
     name: iPad Safari portrait and landscape
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -107,6 +107,7 @@ jobs:
       - run: npm install --ignore-scripts
       - run: npx playwright install --with-deps webkit
       - name: Run iPad browser checks
+        timeout-minutes: 10
         shell: bash
         run: |
           set -o pipefail

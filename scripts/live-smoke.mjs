@@ -29,10 +29,10 @@ if (new Set(ids.map((id) => id.toLowerCase())).size !== ids.length) {
 
 const activeCards = page.locator('.app-card');
 if (await activeCards.count()) {
-  await activeCards.first().getByText('次にやること').waitFor();
-  await activeCards.first().getByText('単体テスト').waitFor();
-  await activeCards.first().getByText('iPad Safari').waitFor();
-  await activeCards.first().getByText('公開URL').waitFor();
+  await activeCards.first().getByText('次にやること', { exact: true }).waitFor();
+  await activeCards.first().getByText('単体テスト', { exact: true }).waitFor();
+  await activeCards.first().getByText('iPad Safari', { exact: true }).waitFor();
+  await activeCards.first().getByText('公開URL', { exact: true }).waitFor();
   await activeCards.first().locator('select[data-priority]').waitFor();
 }
 

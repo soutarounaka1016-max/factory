@@ -14,7 +14,6 @@ if (!response?.ok()) throw new Error(`Page returned ${response?.status() ?? 'no 
 await page.getByRole('heading', { name: 'AI工場ダッシュボード' }).waitFor({ timeout: 30000 });
 await page.getByRole('heading', { name: '全体概要' }).waitFor({ timeout: 30000 });
 await page.getByRole('heading', { name: '開発中のアプリ' }).waitFor({ timeout: 30000 });
-await page.getByRole('heading', { name: 'エラーセンター' }).waitFor({ timeout: 30000 });
 await page.getByRole('heading', { name: '完了したアプリ開発' }).waitFor({ timeout: 30000 });
 await page.getByRole('button', { name: /最新状態に更新/ }).waitFor({ timeout: 30000 });
 
@@ -26,6 +25,15 @@ if (cardCount < 1) throw new Error('No application cards were rendered');
 const ids = await cards.evaluateAll((items) => items.map((item) => item.getAttribute('data-app-id')).filter(Boolean));
 if (new Set(ids.map((id) => id.toLowerCase())).size !== ids.length) {
   throw new Error(`Duplicate application cards: ${ids.join(', ')}`);
+}
+
+const activeCards = page.locator('.app-card');
+if (await activeCards.count()) {
+  await activeCards.first().getByText('次にやること', { exact: true }).waitFor();
+  await activeCards.first().getByText('単体テスト', { exact: true }).waitFor();
+  await activeCards.first().getByText('iPad Safari', { exact: true }).waitFor();
+  await activeCards.first().getByText('公開URL', { exact: true }).waitFor();
+  await activeCards.first().locator('select[data-priority]').waitFor();
 }
 
 const skipLinkIntrudesIntoViewport = await page.locator('.skip-link').evaluate((element) => {

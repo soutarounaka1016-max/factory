@@ -25,16 +25,8 @@ const discoveryUrl = `${apiBase}/users/${owner}/repos?per_page=100&type=owner&so
 const repoRoot = `${apiBase}/repos/${owner}`;
 
 const discoveredRepositories = [
-  {
-    name: 'idea.withGPT', owner: { login: owner }, description: '事業アイデアを育てるアプリ。',
-    homepage: 'https://soutarounaka1016-max.github.io/idea.withGPT/', has_pages: true,
-    private: false, archived: false, fork: false, pushed_at: '2026-07-22T01:00:00Z',
-  },
-  {
-    name: 'study-canvas', owner: { login: owner }, description: '勉強管理アプリ。',
-    homepage: 'https://soutarounaka1016-max.github.io/study-canvas/', has_pages: true,
-    private: false, archived: false, fork: false, pushed_at: '2026-07-21T10:00:00Z',
-  },
+  { name: 'idea.withGPT', owner: { login: owner }, description: '事業アイデアを育てるアプリ。', homepage: 'https://soutarounaka1016-max.github.io/idea.withGPT/', has_pages: true, private: false, archived: false, fork: false, pushed_at: '2026-07-22T01:00:00Z' },
+  { name: 'study-canvas', owner: { login: owner }, description: '勉強管理アプリ。', homepage: 'https://soutarounaka1016-max.github.io/study-canvas/', has_pages: true, private: false, archived: false, fork: false, pushed_at: '2026-07-21T10:00:00Z' },
   { name: 'factory', owner: { login: owner }, description: 'ダッシュボード自身。', has_pages: true, private: false, archived: false, fork: false },
   { name: 'unfinished-repository', owner: { login: owner }, has_pages: false, private: false, archived: false, fork: false },
 ];
@@ -44,9 +36,7 @@ async function mockGithub(page, fail = false) {
     const url = route.request().url();
     if (fail) return route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ message: 'rate limited' }) });
     if (url === discoveryUrl) return route.fulfill({ json: discoveredRepositories });
-    if (url === `${repoRoot}/study-canvas` || url === `${repoRoot}/idea.withGPT`) {
-      return route.fulfill({ json: { html_url: url.replace(apiBase, 'https://github.com'), updated_at: '2026-07-22T01:00:00Z', pushed_at: '2026-07-22T01:00:00Z', default_branch: 'main', archived: false, open_issues_count: 0 } });
-    }
+    if (url === `${repoRoot}/study-canvas` || url === `${repoRoot}/idea.withGPT`) return route.fulfill({ json: { html_url: url.replace(apiBase, 'https://github.com'), updated_at: '2026-07-22T01:00:00Z', pushed_at: '2026-07-22T01:00:00Z', default_branch: 'main', archived: false, open_issues_count: 0 } });
     if (url.includes('/commits?')) return route.fulfill({ json: [{ sha: 'abcdef1234567890', html_url: 'https://github.com/example/commit/abcdef1', commit: { message: 'feat: fixture', author: { name: 'AI', date: '2026-07-22T00:55:00Z' } } }] });
     if (url.includes('/actions/runs?')) return route.fulfill({ json: { workflow_runs: [
       { id: 11, name: 'Deploy GitHub Pages', status: 'completed', conclusion: 'success', html_url: 'https://github.com/example/actions/runs/11', run_number: 11, updated_at: '2026-07-22T01:03:00Z' },
@@ -66,7 +56,7 @@ async function mockGithub(page, fail = false) {
 
 test.beforeEach(async ({ page }) => { await mockGithub(page); });
 
-test('discovers apps and renders the control room', async ({ page }) => {
+test('discovers apps and renders the simplified control room', async ({ page }) => {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await openApp(page);
@@ -75,22 +65,32 @@ test('discovers apps and renders the control room', async ({ page }) => {
   await expect(studyCard.getByRole('heading', { name: 'Study Canvas' })).toBeVisible();
   await expect(businessCard.getByRole('heading', { name: '事業アイデア管理アプリ' })).toBeVisible();
   await expect(page.locator('.app-card')).toHaveCount(2);
+  await expect(studyCard.getByText('次にやること', { exact: true })).toBeVisible();
+  await expect(studyCard.getByText('単体テスト', { exact: true })).toBeVisible();
+  await expect(studyCard.getByText('iPad Safari', { exact: true })).toBeVisible();
+  await expect(studyCard.getByText('公開URL', { exact: true })).toBeVisible();
+  await expect(studyCard.locator('select[data-priority]')).toBeVisible();
   await expect(studyCard.getByRole('link', { name: '開く' })).toHaveAttribute('href', 'https://soutarounaka1016-max.github.io/study-canvas/');
-  await expect(businessCard.getByRole('link', { name: '開く' })).toHaveAttribute('href', 'https://soutarounaka1016-max.github.io/idea.withGPT/');
-  await expect(page.getByRole('heading', { name: 'エラーセンター' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: '更新履歴' })).toBeVisible();
-  await expect(page.getByText('AIメモ').first()).toBeVisible();
   expect(errors).toEqual([]);
 });
 
-test('opens detail panel with health checks and next action', async ({ page }) => {
+test('opens technical details', async ({ page }) => {
   await openApp(page);
-  await page.locator('[data-app-id="idea.withGPT"]').getByRole('button', { name: '詳細を確認' }).click();
+  await page.locator('[data-app-id="idea.withGPT"]').getByRole('button', { name: '詳細' }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole('heading', { name: '事業アイデア管理アプリ' })).toBeVisible();
-  await expect(dialog.getByRole('heading', { name: 'AIメモと次の作業' })).toBeVisible();
-  await expect(dialog.getByRole('heading', { name: '自動ヘルスチェック' })).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: '技術的な確認結果' })).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: '関連リンク' })).toBeVisible();
+});
+
+test('priority can be changed and survives reload', async ({ page }) => {
+  await openApp(page);
+  const select = page.locator('[data-app-id="study-canvas"] select[data-priority]');
+  await select.selectOption('2');
+  await expect(page.getByText(/優先度を2に変更しました/)).toBeVisible();
+  await page.reload();
+  await expect(page.locator('[data-app-id="study-canvas"] select[data-priority]')).toHaveValue('2');
 });
 
 test('manual update works', async ({ page }) => {
@@ -100,19 +100,17 @@ test('manual update works', async ({ page }) => {
   await expect(page.getByText(/最新状態へ更新しました/)).toBeVisible();
 });
 
-test('API failure keeps the pinned app and shows the error', async ({ page }) => {
+test('API failure keeps the pinned app and reports the failure', async ({ page }) => {
   await page.unroute('https://api.github.com/**');
   await mockGithub(page, true);
   await openApp(page);
   await expect(page.getByRole('heading', { name: 'Study Canvas' })).toBeVisible();
-  await expect(page.getByText(/情報を取得できませんでした/)).toBeVisible();
-  await page.getByRole('button', { name: '詳細を確認' }).first().click();
-  await expect(page.getByText(/HTTP 403/).first()).toBeVisible();
+  await expect(page.getByText(/取得できませんでした/)).toBeVisible();
 });
 
 test('main elements stay within viewport', async ({ page }) => {
   await openApp(page);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 2);
   expect(overflow).toBe(false);
-  await expect(page.getByRole('button', { name: '詳細を確認' }).first()).toBeVisible();
+  await expect(page.getByRole('button', { name: '詳細' }).first()).toBeVisible();
 });

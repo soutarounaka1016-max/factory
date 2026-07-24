@@ -69,10 +69,6 @@ jobs:
         include:
           - project: chromium
             browser: chromium
-          - project: ipad-landscape
-            browser: webkit
-          - project: ipad-portrait
-            browser: webkit
           - project: mobile
             browser: chromium
     steps:
@@ -99,10 +95,39 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  ipad:
+    name: iPad Safari portrait and landscape
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --ignore-scripts
+      - run: npx playwright install --with-deps webkit
+      - name: Run iPad browser checks
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          set -o pipefail
+          npx playwright test --project=ipad-landscape --project=ipad-portrait 2>&1 | tee playwright-ipad.log
+      - name: Upload iPad Playwright evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-ipad-${{ github.run_attempt }}
+          path: |
+            playwright-report
+            test-results
+            playwright-ipad.log
+          if-no-files-found: ignore
+          retention-days: 14
+
   report:
     name: Record CI result
     if: always()
-    needs: [pending, unit-test, build, browser]
+    needs: [pending, unit-test, build, browser, ipad]
     runs-on: ubuntu-latest
     steps:
       - name: Publish commit status
@@ -114,9 +139,10 @@ jobs:
           UNIT_RESULT: ${{ needs.unit-test.result }}
           BUILD_RESULT: ${{ needs.build.result }}
           BROWSER_RESULT: ${{ needs.browser.result }}
+          IPAD_RESULT: ${{ needs.ipad.result }}
         shell: bash
         run: |
-          if [ "$PENDING_RESULT" = "success" ] && [ "$UNIT_RESULT" = "success" ] && [ "$BUILD_RESULT" = "success" ] && [ "$BROWSER_RESULT" = "success" ]; then
+          if [ "$PENDING_RESULT" = "success" ] && [ "$UNIT_RESULT" = "success" ] && [ "$BUILD_RESULT" = "success" ] && [ "$BROWSER_RESULT" = "success" ] && [ "$IPAD_RESULT" = "success" ]; then
             STATE=success
             DESCRIPTION="Tests, build and browser checks passed"
           else

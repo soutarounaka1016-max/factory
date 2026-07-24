@@ -65,10 +65,10 @@ test('discovers apps and renders the simplified control room', async ({ page }) 
   await expect(studyCard.getByRole('heading', { name: 'Study Canvas' })).toBeVisible();
   await expect(businessCard.getByRole('heading', { name: '事業アイデア管理アプリ' })).toBeVisible();
   await expect(page.locator('.app-card')).toHaveCount(2);
-  await expect(studyCard.getByText('次にやること')).toBeVisible();
-  await expect(studyCard.getByText('単体テスト')).toBeVisible();
-  await expect(studyCard.getByText('iPad Safari')).toBeVisible();
-  await expect(studyCard.getByText('公開URL')).toBeVisible();
+  await expect(studyCard.getByText('次にやること', { exact: true })).toBeVisible();
+  await expect(studyCard.getByText('単体テスト', { exact: true })).toBeVisible();
+  await expect(studyCard.getByText('iPad Safari', { exact: true })).toBeVisible();
+  await expect(studyCard.getByText('公開URL', { exact: true })).toBeVisible();
   await expect(studyCard.locator('select[data-priority]')).toBeVisible();
   await expect(studyCard.getByRole('link', { name: '開く' })).toHaveAttribute('href', 'https://soutarounaka1016-max.github.io/study-canvas/');
   expect(errors).toEqual([]);
